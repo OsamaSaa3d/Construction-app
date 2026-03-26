@@ -167,6 +167,8 @@ model User {
   accounts         Account[]
   sessions         Session[]
   serviceHubPosts  ServiceHubPost[]
+  serviceHubComments ServiceHubComment[]
+  serviceHubLikes    ServiceHubLike[]
   serviceRequests  ServiceRequest[]
   serviceBids      ServiceBid[]
   notifications    Notification[]
@@ -674,6 +676,7 @@ model ServiceHubComment {
   postId    String
   post      ServiceHubPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   authorId  String
+  author    User           @relation(fields: [authorId], references: [id])
   content   String
   createdAt DateTime       @default(now())
 
@@ -685,6 +688,7 @@ model ServiceHubLike {
   postId    String
   post      ServiceHubPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
+  user      User           @relation(fields: [userId], references: [id])
   createdAt DateTime       @default(now())
 
   @@unique([postId, userId])
