@@ -4,12 +4,12 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { signIn } from "@/lib/auth";
-import { UAECity, UserRole } from "@/generated/prisma";
+import { UAECity, UserRole } from "@/generated/prisma/client";
 
 export async function registerUser(data: RegisterInput) {
   const parsed = registerSchema.safeParse(data);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0].message };
+    return { error: parsed.error.issues[0].message };
   }
 
   const { name, email, password, role, companyName, city, phone, tradeLicense } = parsed.data;

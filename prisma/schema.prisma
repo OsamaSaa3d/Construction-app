@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 // ============================================================
@@ -182,12 +182,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -227,8 +227,8 @@ model SupplierProfile {
   longitude      Float?
   address        String?
   addressAr      String?
-  description    String?  @db.Text
-  descriptionAr  String?  @db.Text
+  description    String?
+  descriptionAr  String?
   isVerified     Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -251,7 +251,7 @@ model ContractorProfile {
   tradeLicense  String?
   city          UAECity
   address       String?
-  description   String?  @db.Text
+  description   String?
   managerUserId String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -318,28 +318,28 @@ model UnitOfMeasure {
 }
 
 model InventoryItem {
-  id              String          @id @default(cuid())
-  supplierId      String
-  supplier        SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  categoryId      String
-  category        MaterialCategory @relation(fields: [categoryId], references: [id])
-  unitId          String
-  unit            UnitOfMeasure   @relation(fields: [unitId], references: [id])
-  name            String
-  nameAr          String?
-  description     String?         @db.Text
-  descriptionAr   String?         @db.Text
-  sku             String?
-  brand           String?
-  pricePerUnit    Decimal         @db.Decimal(12, 2)
-  currency        String          @default("AED")
-  quantityInStock Decimal         @db.Decimal(12, 2)
-  minOrderQty     Decimal?        @db.Decimal(12, 2)
-  images          String[]
-  isActive        Boolean         @default(true)
-  canUrgentDeliver Boolean        @default(false)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id               String          @id @default(cuid())
+  supplierId       String
+  supplier         SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  categoryId       String
+  category         MaterialCategory @relation(fields: [categoryId], references: [id])
+  unitId           String
+  unit             UnitOfMeasure   @relation(fields: [unitId], references: [id])
+  name             String
+  nameAr           String?
+  description      String?
+  descriptionAr    String?
+  sku              String?
+  brand            String?
+  pricePerUnit     Decimal
+  currency         String          @default("AED")
+  quantityInStock  Decimal
+  minOrderQty      Decimal?
+  images           String          @default("[]")
+  isActive         Boolean         @default(true)
+  canUrgentDeliver Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 
   marketplaceListing MarketplaceListing?
 
@@ -358,11 +358,11 @@ model MarketplaceListing {
   category        MaterialCategory @relation(fields: [categoryId], references: [id])
   title           String
   titleAr         String?
-  description     String?         @db.Text
-  descriptionAr   String?         @db.Text
-  price           Decimal         @db.Decimal(12, 2)
+  description     String?
+  descriptionAr   String?
+  price           Decimal
   currency        String          @default("AED")
-  images          String[]
+  images          String          @default("[]")
   isFeatured      Boolean         @default(false)
   isActive        Boolean         @default(true)
   viewCount       Int             @default(0)
@@ -379,7 +379,7 @@ model MarketplaceOrder {
   id          String      @id @default(cuid())
   customerId  String
   customer    CustomerProfile @relation(fields: [customerId], references: [id])
-  totalAmount Decimal     @db.Decimal(12, 2)
+  totalAmount Decimal
   currency    String      @default("AED")
   status      OrderStatus @default(PENDING)
   createdAt   DateTime    @default(now())
@@ -395,9 +395,9 @@ model MarketplaceOrderItem {
   order      MarketplaceOrder   @relation(fields: [orderId], references: [id])
   listingId  String
   listing    MarketplaceListing @relation(fields: [listingId], references: [id])
-  quantity   Decimal            @db.Decimal(12, 2)
-  unitPrice  Decimal            @db.Decimal(12, 2)
-  totalPrice Decimal            @db.Decimal(12, 2)
+  quantity   Decimal
+  unitPrice  Decimal
+  totalPrice Decimal
 }
 
 // ============================================================
@@ -410,8 +410,8 @@ model BOQ {
   status          BOQStatus  @default(DRAFT)
   title           String
   titleAr         String?
-  description     String?    @db.Text
-  descriptionAr   String?    @db.Text
+  description     String?
+  descriptionAr   String?
   createdByUserId String
 
   consultantId String?
@@ -420,8 +420,8 @@ model BOQ {
   contractor   ContractorProfile? @relation(fields: [contractorId], references: [id])
 
   purchaseMode    PurchaseMode?
-  startingPrice   Decimal?   @db.Decimal(12, 2)
-  autoAcceptPrice Decimal?   @db.Decimal(12, 2)
+  startingPrice   Decimal?
+  autoAcceptPrice Decimal?
   currency        String     @default("AED")
   deliveryCity    UAECity?
 
@@ -451,8 +451,8 @@ model BOQItem {
   description    String
   descriptionAr  String?
   specification  String?
-  quantity       Decimal           @db.Decimal(12, 2)
-  estimatedPrice Decimal?          @db.Decimal(12, 2)
+  quantity       Decimal
+  estimatedPrice Decimal?
   createdAt      DateTime          @default(now())
 
   bidLineItems BidLineItem[]
@@ -472,11 +472,11 @@ model MaterialBid {
   boq          BOQ             @relation(fields: [boqId], references: [id])
   supplierId   String
   supplier     SupplierProfile @relation(fields: [supplierId], references: [id])
-  totalPrice   Decimal         @db.Decimal(12, 2)
+  totalPrice   Decimal
   currency     String          @default("AED")
   deliveryDays Int?
-  deliveryCost Decimal?        @db.Decimal(12, 2)
-  notes        String?         @db.Text
+  deliveryCost Decimal?
+  notes        String?
   status       BidStatus       @default(SUBMITTED)
   isAnonymous  Boolean         @default(true)
   submittedAt  DateTime        @default(now())
@@ -496,8 +496,8 @@ model BidLineItem {
   bid        MaterialBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
   boqItemId  String
   boqItem    BOQItem     @relation(fields: [boqItemId], references: [id])
-  unitPrice  Decimal     @db.Decimal(12, 2)
-  totalPrice Decimal     @db.Decimal(12, 2)
+  unitPrice  Decimal
+  totalPrice Decimal
   brand      String?
   notes      String?
 
@@ -516,7 +516,7 @@ model Order {
   bid          MaterialBid       @relation(fields: [bidId], references: [id])
   contractorId String
   contractor   ContractorProfile @relation(fields: [contractorId], references: [id])
-  totalAmount  Decimal           @db.Decimal(12, 2)
+  totalAmount  Decimal
   currency     String            @default("AED")
   status       OrderStatus       @default(PENDING)
   createdAt    DateTime          @default(now())
@@ -534,9 +534,9 @@ model OrderItem {
   order      Order   @relation(fields: [orderId], references: [id])
   boqItemId  String
   boqItem    BOQItem @relation(fields: [boqItemId], references: [id])
-  quantity   Decimal @db.Decimal(12, 2)
-  unitPrice  Decimal @db.Decimal(12, 2)
-  totalPrice Decimal @db.Decimal(12, 2)
+  quantity   Decimal
+  unitPrice  Decimal
+  totalPrice Decimal
 }
 
 model EscrowTransaction {
@@ -545,7 +545,7 @@ model EscrowTransaction {
   order              Order?            @relation(fields: [orderId], references: [id])
   marketplaceOrderId String?           @unique
   marketplaceOrder   MarketplaceOrder? @relation(fields: [marketplaceOrderId], references: [id])
-  amount             Decimal           @db.Decimal(12, 2)
+  amount             Decimal
   currency           String            @default("AED")
   status             EscrowStatus      @default(PENDING_PAYMENT)
   paymentReference   String?
@@ -563,8 +563,8 @@ model Delivery {
   order       Order           @relation(fields: [orderId], references: [id])
   supplierId  String
   supplier    SupplierProfile @relation(fields: [supplierId], references: [id])
-  proofImages String[]
-  notes       String?         @db.Text
+  proofImages String          @default("[]")
+  notes       String?
   deliveredAt DateTime?
   confirmedAt DateTime?
   confirmedBy String?
@@ -596,13 +596,13 @@ model UrgentRequest {
   contractorId String
   contractor   ContractorProfile @relation(fields: [contractorId], references: [id])
   title        String
-  description  String?           @db.Text
+  description  String?
   deliveryCity UAECity
   deliveryLat  Float
   deliveryLng  Float
   maxRadiusKm  Int               @default(50)
   status       UrgentStatus      @default(SEARCHING)
-  maxBudget    Decimal?          @db.Decimal(12, 2)
+  maxBudget    Decimal?
   currency     String            @default("AED")
   neededBy     DateTime?
   createdAt    DateTime          @default(now())
@@ -619,7 +619,7 @@ model UrgentRequestItem {
   requestId   String
   request     UrgentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
   description String
-  quantity    Decimal       @db.Decimal(12, 2)
+  quantity    Decimal
   unit        String
 }
 
@@ -630,7 +630,7 @@ model UrgentSupplierMatch {
   supplierId  String
   distanceKm  Float
   canFulfill  Boolean       @default(false)
-  priceQuote  Decimal?      @db.Decimal(12, 2)
+  priceQuote  Decimal?
   respondedAt DateTime?
   accepted    Boolean       @default(false)
   createdAt   DateTime      @default(now())
@@ -650,10 +650,10 @@ model ServiceHubPost {
   category     ServiceCategory
   title        String
   titleAr      String?
-  content      String          @db.Text
-  contentAr    String?         @db.Text
-  images       String[]
-  tags         String[]
+  content      String
+  contentAr    String?
+  images       String          @default("[]")
+  tags         String          @default("[]")
   likeCount    Int             @default(0)
   commentCount Int             @default(0)
   isActive     Boolean         @default(true)
@@ -672,7 +672,7 @@ model ServiceHubComment {
   postId    String
   post      ServiceHubPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   authorId  String
-  content   String         @db.Text
+  content   String
   createdAt DateTime       @default(now())
 
   @@index([postId])
@@ -699,12 +699,12 @@ model ServiceRequest {
   category      ServiceCategory
   title         String
   titleAr       String?
-  description   String               @db.Text
-  descriptionAr String?              @db.Text
-  budget        Decimal?             @db.Decimal(12, 2)
+  description   String
+  descriptionAr String?
+  budget        Decimal?
   currency      String               @default("AED")
   city          UAECity
-  images        String[]
+  images        String               @default("[]")
   status        ServiceRequestStatus @default(OPEN)
   deadline      DateTime?
   createdAt     DateTime             @default(now())
@@ -722,9 +722,9 @@ model ServiceBid {
   request       ServiceRequest @relation(fields: [requestId], references: [id])
   bidderId      String
   bidder        User           @relation(fields: [bidderId], references: [id])
-  price         Decimal        @db.Decimal(12, 2)
+  price         Decimal
   currency      String         @default("AED")
-  proposal      String         @db.Text
+  proposal      String
   estimatedDays Int?
   status        BidStatus      @default(SUBMITTED)
   createdAt     DateTime       @default(now())
@@ -749,7 +749,7 @@ model SupplierRating {
   timeliness          Int
   materialQuality     Int
   overallScore        Float
-  comment             String?         @db.Text
+  comment             String?
   createdAt           DateTime        @default(now())
 
   @@unique([supplierId, ratedByUserId, orderId])
@@ -782,7 +782,7 @@ model Message {
   sender     User     @relation("SentMessages", fields: [senderId], references: [id])
   receiverId String
   receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  content    String   @db.Text
+  content    String
   isRead     Boolean  @default(false)
   createdAt  DateTime @default(now())
 

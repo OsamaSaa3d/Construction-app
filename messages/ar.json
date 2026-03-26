@@ -19,7 +19,9 @@
     "no": "لا",
     "or": "أو",
     "and": "و",
-    "aed": "د.إ"
+    "aed": "د.إ",
+    "saving": "جارٍ الحفظ...",
+    "status": "الحالة"
   },
   "nav": {
     "home": "الرئيسية",
@@ -106,7 +108,37 @@
     "sortBy": "ترتيب حسب",
     "newest": "الأحدث",
     "priceLowHigh": "السعر: من الأقل إلى الأعلى",
-    "priceHighLow": "السعر: من الأعلى إلى الأقل"
+    "priceHighLow": "السعر: من الأعلى إلى الأقل",
+    "supplier": "المورّد",
+    "contactSupplier": "تواصل مع المورّد"
+  },
+  "inventory": {
+    "addItem": "إضافة عنصر",
+    "editItem": "تعديل عنصر",
+    "addDescription": "أضف عنصراً جديداً إلى مخزونك.",
+    "editDescription": "حدّث تفاصيل هذا العنصر في المخزون.",
+    "name": "الاسم",
+    "nameAr": "الاسم (بالعربية)",
+    "category": "الفئة",
+    "selectCategory": "اختر الفئة",
+    "unit": "الوحدة",
+    "selectUnit": "اختر الوحدة",
+    "brand": "العلامة التجارية",
+    "sku": "رمز المنتج",
+    "price": "السعر",
+    "quantity": "الكمية",
+    "minOrder": "الحد الأدنى للطلب",
+    "description": "الوصف",
+    "descriptionAr": "الوصف (بالعربية)",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "urgentDelivery": "توصيل عاجل",
+    "subtitle": "{count, plural, =0 {لا توجد عناصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصراً} other {# عنصر}} في مخزونك",
+    "empty": "لا توجد عناصر في المخزون بعد. أضف أول عنصر للبدء.",
+    "confirmDelete": "هل أنت متأكد من حذف هذا العنصر؟",
+    "publish": "نشر في السوق",
+    "unpublish": "إزالة من السوق",
+    "published": "منشور"
   },
   "landing": {
     "hero": "سوق مواد البناء الخاص بك",

@@ -2,9 +2,12 @@ import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { Geist } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import { isRtl, type Locale } from "@/i18n/config";
 import "@/app/globals.css";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 type Props = {
   children: ReactNode;
@@ -27,7 +30,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const dir = isRtl(locale as Locale) ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={dir}>
+    <html lang={locale} dir={dir} className={geist.variable}>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>

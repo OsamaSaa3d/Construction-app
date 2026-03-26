@@ -6,7 +6,11 @@
       "Bash(npx:*)",
       "Bash(yes \"\")",
       "Bash(npm install:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(ls /c/Users/Osama/Desktop/monzer/src/generated/prisma/index*)",
+      "Bash(npm uninstall:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"go ahead with phase2 but use sqllite instead of postgres and do not use docker\" npx prisma migrate reset --force 2>&1)",
+      "Bash(find:*)"
     ]
   }
 }
