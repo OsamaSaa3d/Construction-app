@@ -20,6 +20,7 @@ export const supplierNavItems: NavItem[] = [
   { labelKey: "supplier.inventory", href: "/supplier/inventory", icon: Package },
   { labelKey: "supplier.myBids", href: "/supplier/bids", icon: Gavel },
   { labelKey: "supplier.orders", href: "/supplier/orders", icon: ShoppingCart },
+  { labelKey: "supplier.urgent", href: "/supplier/urgent", icon: Zap },
   { labelKey: "supplier.ratings", href: "/supplier/ratings", icon: Star },
 ];
 

@@ -238,6 +238,7 @@ model SupplierProfile {
   materialBids        MaterialBid[]
   ratings             SupplierRating[]
   deliveries          Delivery[]
+  urgentMatches       UrgentSupplierMatch[]
 
   @@index([city])
 }
@@ -624,16 +625,17 @@ model UrgentRequestItem {
 }
 
 model UrgentSupplierMatch {
-  id          String        @id @default(cuid())
+  id          String          @id @default(cuid())
   requestId   String
-  request     UrgentRequest @relation(fields: [requestId], references: [id])
+  request     UrgentRequest   @relation(fields: [requestId], references: [id])
   supplierId  String
+  supplier    SupplierProfile @relation(fields: [supplierId], references: [id])
   distanceKm  Float
-  canFulfill  Boolean       @default(false)
+  canFulfill  Boolean         @default(false)
   priceQuote  Decimal?
   respondedAt DateTime?
-  accepted    Boolean       @default(false)
-  createdAt   DateTime      @default(now())
+  accepted    Boolean         @default(false)
+  createdAt   DateTime        @default(now())
 
   @@unique([requestId, supplierId])
   @@index([requestId])
