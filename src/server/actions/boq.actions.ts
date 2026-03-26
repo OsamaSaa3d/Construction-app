@@ -19,6 +19,12 @@ async function getSupplierProfile() {
   return prisma.supplierProfile.findUnique({ where: { userId: session.user.id } });
 }
 
+export async function getContractorProfile() {
+  const session = await auth();
+  if (!session?.user?.id || session.user.role !== "CONTRACTOR") return null;
+  return prisma.contractorProfile.findUnique({ where: { userId: session.user.id } });
+}
+
 // ─── Consultant: BOQ management ───────────────────────────────────────────────
 
 /**
@@ -74,13 +80,16 @@ export async function getBOQDetail(id: string) {
         orderBy: { totalPrice: "asc" },
       },
       consultant: { select: { userId: true } },
+      contractor: { select: { userId: true, managerUserId: true } },
     },
   });
 
   if (!boq) return { error: "Not found" };
 
   // Determine if the caller is the owner
-  const isOwner = boq.consultant?.userId === session.user.id;
+  const isOwner =
+    boq.consultant?.userId === session.user.id ||
+    boq.contractor?.userId === session.user.id;
   const isSupplier = session.user.role === "SUPPLIER";
 
   if (!isOwner && !isSupplier) return { error: "Forbidden" };
@@ -101,7 +110,14 @@ export async function getBOQDetail(id: string) {
     };
   });
 
-  return { data: { ...boq, materialBids: sanitisedBids, isOwner } };
+  return {
+    data: {
+      ...boq,
+      materialBids: sanitisedBids,
+      isOwner,
+      managerUserId: boq.contractor?.managerUserId ?? null,
+    },
+  };
 }
 
 /**
@@ -232,7 +248,7 @@ export async function getOpenBOQsForSupplier() {
   if (!profile) return { error: "Unauthorized" };
 
   const boqs = await prisma.bOQ.findMany({
-    where: { type: "MARKET_ANALYSIS", status: "PUBLISHED" },
+    where: { type: { in: ["MARKET_ANALYSIS", "PURCHASE"] }, status: "PUBLISHED" },
     include: {
       items: { select: { id: true } },
       materialBids: {
@@ -268,9 +284,13 @@ export async function submitBid(boqId: string, data: SubmitBidInput) {
   const profile = await getSupplierProfile();
   if (!profile) return { error: "Unauthorized" };
 
-  // Verify BOQ is still open
+  // Verify BOQ is still open (both MARKET_ANALYSIS and PURCHASE types)
   const boq = await prisma.bOQ.findFirst({
-    where: { id: boqId, type: "MARKET_ANALYSIS", status: "PUBLISHED" },
+    where: {
+      id: boqId,
+      type: { in: ["MARKET_ANALYSIS", "PURCHASE"] },
+      status: "PUBLISHED",
+    },
     include: { items: { select: { id: true } } },
   });
   if (!boq) return { error: "BOQ not found or no longer accepting bids" };
@@ -351,13 +371,60 @@ export async function submitBid(boqId: string, data: SubmitBidInput) {
     });
   }
 
+  // Re-fetch the full BOQ to get autoAcceptPrice (needed for PURCHASE type)
+  const fullBoq = await prisma.bOQ.findUnique({
+    where: { id: boqId },
+    select: { autoAcceptPrice: true, type: true, contractorId: true },
+  });
+
+  // Auto-accept logic for PURCHASE BOQs
+  if (
+    fullBoq?.type === "PURCHASE" &&
+    fullBoq.autoAcceptPrice !== null &&
+    grandTotal <= Number(fullBoq.autoAcceptPrice)
+  ) {
+    // Get the newly created/updated bid
+    const newBid = await prisma.materialBid.findUnique({
+      where: { boqId_supplierId: { boqId, supplierId: profile.id } },
+    });
+    if (newBid) {
+      await prisma.$transaction([
+        prisma.materialBid.update({
+          where: { id: newBid.id },
+          data: { status: "AUTO_ACCEPTED", isAnonymous: false },
+        }),
+        prisma.materialBid.updateMany({
+          where: { boqId, id: { not: newBid.id } },
+          data: { status: "REJECTED" },
+        }),
+        prisma.bOQ.update({ where: { id: boqId }, data: { status: "AWARDED" } }),
+        prisma.order.create({
+          data: {
+            boqId,
+            bidId: newBid.id,
+            contractorId: fullBoq.contractorId!,
+            totalAmount: grandTotal,
+            status: "PENDING",
+            escrow: {
+              create: { amount: grandTotal, status: "PENDING_PAYMENT" },
+            },
+          },
+        }),
+      ]);
+      revalidatePath(`/supplier/bids/${boqId}`);
+      revalidatePath("/supplier/bids");
+      revalidatePath("/contractor/boq");
+      return { success: true, autoAccepted: true };
+    }
+  }
+
   revalidatePath(`/supplier/bids/${boqId}`);
   revalidatePath("/supplier/bids");
   return { success: true };
 }
 
 /**
- * Withdraw own bid on a BOQ.
+ * Supplier withdraws their own bid (only while SUBMITTED).
  */
 export async function withdrawBid(bidId: string) {
   const profile = await getSupplierProfile();
