@@ -31,7 +31,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} dir={dir} className={geist.variable}>
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body
+        suppressHydrationWarning
+        className="min-h-screen bg-background text-foreground antialiased"
+      >
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
