@@ -500,5 +500,61 @@
       "FLOORING": "Flooring",
       "OTHER": "Other"
     }
+  },
+  "ratings": {
+    "title": "My Ratings",
+    "supplierRatings": "Received Ratings",
+    "rateSupplier": "Rate Supplier",
+    "alreadyRated": "Already Rated",
+    "rateTitle": "Rate this Supplier",
+    "rateDesc": "Share your experience to help other contractors.",
+    "trustworthiness": "Trustworthiness",
+    "deliveryReliability": "Delivery Reliability",
+    "timeliness": "Timeliness",
+    "materialQuality": "Material Quality",
+    "comment": "Comment (optional)",
+    "commentPlaceholder": "Describe your experience...",
+    "submitRating": "Submit Rating",
+    "submitting": "Submitting...",
+    "overallScore": "Overall Score",
+    "noRatings": "No ratings yet",
+    "noRatingsDesc": "You haven't received any ratings yet.",
+    "ratedBy": "Rated by",
+    "averageScores": "Average Scores",
+    "totalRatings": "{count, plural, =0 {No ratings} one {1 rating} other {# ratings}}",
+    "score": "{score} / 5"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications",
+    "noNotificationsDesc": "You're all caught up!",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "unread": "Unread",
+    "types": {
+      "BID_RECEIVED": "Bid Received",
+      "BID_ACCEPTED": "Bid Accepted",
+      "BID_REJECTED": "Bid Rejected",
+      "ORDER_CREATED": "Order Created",
+      "DELIVERY_PROOF": "Delivery Proof",
+      "PAYMENT_RELEASED": "Payment Released",
+      "MANAGER_APPROVAL_NEEDED": "Manager Approval Needed",
+      "URGENT_MATCH": "Urgent Match",
+      "SERVICE_BID_RECEIVED": "Service Bid Received",
+      "RATING_RECEIVED": "New Rating",
+      "GENERAL": "Notification"
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "inbox": "Inbox",
+    "newMessage": "New Message",
+    "noConversations": "No conversations",
+    "noConversationsDesc": "Start a conversation with a supplier or contractor.",
+    "noMessages": "No messages yet",
+    "sendMessage": "Send",
+    "messagePlaceholder": "Type a message...",
+    "sending": "Sending...",
+    "you": "You"
   }
 }

@@ -499,5 +499,61 @@
       "FLOORING": "أرضيات",
       "OTHER": "أخرى"
     }
+  },
+  "ratings": {
+    "title": "تقييماتي",
+    "supplierRatings": "التقييمات المستلمة",
+    "rateSupplier": "تقييم المورد",
+    "alreadyRated": "تم التقييم مسبقاً",
+    "rateTitle": "تقييم هذا المورد",
+    "rateDesc": "شارك تجربتك لمساعدة المقاولين الآخرين.",
+    "trustworthiness": "الجدارة بالثقة",
+    "deliveryReliability": "موثوقية التسليم",
+    "timeliness": "الالتزام بالمواعيد",
+    "materialQuality": "جودة المواد",
+    "comment": "تعليق (اختياري)",
+    "commentPlaceholder": "صف تجربتك...",
+    "submitRating": "إرسال التقييم",
+    "submitting": "جارٍ الإرسال...",
+    "overallScore": "الدرجة الكلية",
+    "noRatings": "لا توجد تقييمات بعد",
+    "noRatingsDesc": "لم تستلم أي تقييمات حتى الآن.",
+    "ratedBy": "قيّم بواسطة",
+    "averageScores": "متوسط الدرجات",
+    "totalRatings": "{count, plural, =0 {لا تقييمات} one {تقييم واحد} other {# تقييمات}}",
+    "score": "{score} / 5"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "noNotifications": "لا توجد إشعارات",
+    "noNotificationsDesc": "لقد اطلعت على كل شيء!",
+    "markRead": "تحديد كمقروء",
+    "markAllRead": "تحديد الكل كمقروء",
+    "unread": "غير مقروء",
+    "types": {
+      "BID_RECEIVED": "عرض سعر مستلم",
+      "BID_ACCEPTED": "تم قبول العرض",
+      "BID_REJECTED": "تم رفض العرض",
+      "ORDER_CREATED": "طلب جديد",
+      "DELIVERY_PROOF": "إثبات التسليم",
+      "PAYMENT_RELEASED": "تم إصدار الدفعة",
+      "MANAGER_APPROVAL_NEEDED": "يحتاج موافقة المدير",
+      "URGENT_MATCH": "تطابق عاجل",
+      "SERVICE_BID_RECEIVED": "عرض خدمة مستلم",
+      "RATING_RECEIVED": "تقييم جديد",
+      "GENERAL": "إشعار"
+    }
+  },
+  "messages": {
+    "title": "الرسائل",
+    "inbox": "صندوق الوارد",
+    "newMessage": "رسالة جديدة",
+    "noConversations": "لا توجد محادثات",
+    "noConversationsDesc": "ابدأ محادثة مع مورد أو مقاول.",
+    "noMessages": "لا توجد رسائل بعد",
+    "sendMessage": "إرسال",
+    "messagePlaceholder": "اكتب رسالة...",
+    "sending": "جارٍ الإرسال...",
+    "you": "أنت"
   }
 }

@@ -18,9 +18,10 @@ import { Link } from "@/i18n/navigation";
 type Props = {
   userName: string;
   userRole: string;
+  unreadCount?: number;
 };
 
-export function DashboardNavbar({ userName, userRole }: Props) {
+export function DashboardNavbar({ userName, userRole, unreadCount = 0 }: Props) {
   const t = useTranslations();
 
   const initials = userName
@@ -43,8 +44,13 @@ export function DashboardNavbar({ userName, userRole }: Props) {
 
         {/* Notifications */}
         <Link href="/notifications">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
           </Button>
         </Link>
 

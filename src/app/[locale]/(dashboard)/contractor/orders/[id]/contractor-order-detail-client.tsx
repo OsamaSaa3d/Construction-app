@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -23,8 +25,10 @@ import {
   Package,
   ShieldCheck,
   AlertTriangle,
+  Star,
 } from "lucide-react";
 import { simulatePayment, contractorConfirmReceipt } from "@/server/actions/order.actions";
+import { createSupplierRating } from "@/server/actions/rating.actions";
 
 type OrderDetail = {
   id: string;
@@ -79,16 +83,55 @@ const ESCROW_STEPS = [
   "RELEASED",
 ];
 
-export function ContractorOrderDetailClient({ order }: { order: OrderDetail }) {
+export function ContractorOrderDetailClient({
+  order,
+  supplierUserId,
+  alreadyRated,
+}: {
+  order: OrderDetail;
+  supplierUserId: string | null;
+  alreadyRated: boolean;
+}) {
   const t = useTranslations();
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
+  // Rating state
+  const [ratingScores, setRatingScores] = useState({
+    trustworthiness: 0,
+    deliveryReliability: 0,
+    timeliness: 0,
+    materialQuality: 0,
+  });
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingSubmitted, setRatingSubmitted] = useState(alreadyRated);
+  const [ratingError, setRatingError] = useState<string | null>(null);
+
   const escrowStatus = order.escrow?.status ?? "PENDING_PAYMENT";
   const currentStep = ESCROW_STEPS.indexOf(escrowStatus);
 
-  async function handlePayment() {
-    if (!confirm(t("order.confirmPayment"))) return;
+  async function handleSubmitRating() {
+    if (!supplierUserId) return;
+    const scores = Object.values(ratingScores);
+    if (scores.some((s) => s === 0)) {
+      setRatingError("Please rate all categories.");
+      return;
+    }
+    setRatingError(null);
+    setLoading("rate");
+    const result = await createSupplierRating(supplierUserId, order.id, {
+      ...ratingScores,
+      comment: ratingComment || undefined,
+    });
+    setLoading(null);
+    if (result.error) {
+      setRatingError(result.error);
+    } else {
+      setRatingSubmitted(true);
+    }
+  }
+
+  async function handlePayment() {    if (!confirm(t("order.confirmPayment"))) return;
     setLoading("pay");
     await simulatePayment(order.id);
     setLoading(null);
@@ -320,6 +363,96 @@ export function ContractorOrderDetailClient({ order }: { order: OrderDetail }) {
           </CardContent>
         </Card>
       )}
+
+      {/* Rate supplier — shown when escrow released and supplier identity is known */}
+      {escrowStatus === "RELEASED" && supplierUserId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-amber-400" />
+              {ratingSubmitted ? t("ratings.alreadyRated") : t("ratings.rateTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {ratingSubmitted ? (
+              <p className="text-sm text-green-600 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                {t("ratings.alreadyRated")}
+              </p>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">{t("ratings.rateDesc")}</p>
+                {(
+                  [
+                    ["trustworthiness", t("ratings.trustworthiness")],
+                    ["deliveryReliability", t("ratings.deliveryReliability")],
+                    ["timeliness", t("ratings.timeliness")],
+                    ["materialQuality", t("ratings.materialQuality")],
+                  ] as const
+                ).map(([key, label]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <Label className="text-sm">{label}</Label>
+                    <StarPicker
+                      value={ratingScores[key]}
+                      onChange={(v) =>
+                        setRatingScores((prev) => ({ ...prev, [key]: v }))
+                      }
+                    />
+                  </div>
+                ))}
+                <div>
+                  <Label className="text-sm">{t("ratings.comment")}</Label>
+                  <Textarea
+                    className="mt-1"
+                    placeholder={t("ratings.commentPlaceholder")}
+                    value={ratingComment}
+                    onChange={(e) => setRatingComment(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+                {ratingError && (
+                  <p className="text-sm text-destructive">{ratingError}</p>
+                )}
+                <Button
+                  onClick={handleSubmitRating}
+                  disabled={loading === "rate"}
+                >
+                  {loading === "rate" ? t("ratings.submitting") : t("ratings.submitRating")}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ─── Star picker ──────────────────────────────────────────────────────────────
+
+function StarPicker({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => onChange(s)}
+          className="focus:outline-none"
+        >
+          <Star
+            className={`h-6 w-6 transition-colors ${
+              s <= value ? "fill-amber-400 text-amber-400" : "text-muted-foreground/40 hover:text-amber-300"
+            }`}
+          />
+        </button>
+      ))}
     </div>
   );
 }

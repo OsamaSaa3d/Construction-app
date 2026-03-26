@@ -4,6 +4,7 @@ import { setRequestLocale } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { Sidebar } from "@/components/layout/sidebar";
 import { DashboardNavbar } from "@/components/layout/dashboard-navbar";
+import { getUnreadCount } from "@/server/actions/notification.actions";
 
 type Props = {
   children: ReactNode;
@@ -21,12 +22,17 @@ export default async function DashboardLayout({ children, params }: Props) {
   }
 
   const { user } = session;
+  const { count: unreadCount } = await getUnreadCount();
 
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar role={user.role} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <DashboardNavbar userName={user.name ?? "User"} userRole={user.role} />
+        <DashboardNavbar
+          userName={user.name ?? "User"}
+          userRole={user.role}
+          unreadCount={unreadCount}
+        />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>

@@ -171,6 +171,7 @@ model User {
   serviceHubLikes    ServiceHubLike[]
   serviceRequests  ServiceRequest[]
   serviceBids      ServiceBid[]
+  ratingsGiven     SupplierRating[]
   notifications    Notification[]
   sentMessages     Message[]     @relation("SentMessages")
   receivedMessages Message[]     @relation("ReceivedMessages")
@@ -749,6 +750,7 @@ model SupplierRating {
   supplierId          String
   supplier            SupplierProfile @relation(fields: [supplierId], references: [id])
   ratedByUserId       String
+  ratedByUser         User            @relation(fields: [ratedByUserId], references: [id])
   orderId             String?
   trustworthiness     Int
   deliveryReliability Int
