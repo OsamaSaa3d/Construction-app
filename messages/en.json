@@ -1,0 +1,117 @@
+{
+  "common": {
+    "appName": "Monzer",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "submit": "Submit",
+    "search": "Search",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "or": "or",
+    "and": "and",
+    "aed": "AED"
+  },
+  "nav": {
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "serviceHub": "Service Hub",
+    "serviceBidding": "Service Bidding",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "name": "Full Name",
+    "phone": "Phone Number",
+    "companyName": "Company Name",
+    "tradeLicense": "Trade License Number",
+    "city": "City",
+    "role": "I am a",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to your account",
+    "registerTitle": "Create an account",
+    "registerSubtitle": "Join the Monzer platform",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "forgotPassword": "Forgot password?",
+    "invalidCredentials": "Invalid email or password",
+    "emailExists": "Email already registered"
+  },
+  "roles": {
+    "SUPPLIER": "Supplier",
+    "CONTRACTOR": "Contractor",
+    "CONSULTANT": "Consultant",
+    "CUSTOMER": "Customer"
+  },
+  "cities": {
+    "ABU_DHABI": "Abu Dhabi",
+    "DUBAI": "Dubai",
+    "SHARJAH": "Sharjah",
+    "AJMAN": "Ajman",
+    "UMM_AL_QUWAIN": "Umm Al Quwain",
+    "RAS_AL_KHAIMAH": "Ras Al Khaimah",
+    "FUJAIRAH": "Fujairah"
+  },
+  "dashboard": {
+    "welcome": "Welcome, {name}",
+    "overview": "Overview",
+    "recentActivity": "Recent Activity"
+  },
+  "supplier": {
+    "inventory": "Inventory",
+    "myBids": "My Bids",
+    "orders": "Orders",
+    "ratings": "My Ratings",
+    "addProduct": "Add Product",
+    "manageInventory": "Manage Inventory"
+  },
+  "contractor": {
+    "myBoqs": "My BOQs",
+    "bids": "Bids",
+    "orders": "Orders",
+    "urgent": "Urgent Requests",
+    "createBoq": "Create BOQ"
+  },
+  "consultant": {
+    "myBoqs": "My BOQs",
+    "analysis": "Market Analysis",
+    "createBoq": "Create BOQ"
+  },
+  "customer": {
+    "browse": "Browse Products",
+    "myOrders": "My Orders"
+  },
+  "marketplace": {
+    "title": "Marketplace",
+    "browseProducts": "Browse Products",
+    "allCategories": "All Categories",
+    "filterByCity": "Filter by City",
+    "priceRange": "Price Range",
+    "sortBy": "Sort by",
+    "newest": "Newest",
+    "priceLowHigh": "Price: Low to High",
+    "priceHighLow": "Price: High to Low"
+  },
+  "landing": {
+    "hero": "Your Construction Materials Marketplace",
+    "subtitle": "Connect with suppliers, bid on materials, and manage your construction projects — all in one platform.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  }
+}

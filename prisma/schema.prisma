@@ -1,0 +1,791 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  SUPPLIER
+  CONTRACTOR
+  CONSULTANT
+  CUSTOMER
+  ADMIN
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum UAECity {
+  ABU_DHABI
+  DUBAI
+  SHARJAH
+  AJMAN
+  UMM_AL_QUWAIN
+  RAS_AL_KHAIMAH
+  FUJAIRAH
+}
+
+enum BOQType {
+  MARKET_ANALYSIS
+  PURCHASE
+  URGENT
+}
+
+enum BOQStatus {
+  DRAFT
+  PUBLISHED
+  BIDDING_CLOSED
+  AWARDED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PurchaseMode {
+  ALL_AT_ONCE
+  BIT_BY_BIT
+}
+
+enum BidStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+  AUTO_ACCEPTED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  IN_ESCROW
+  SHIPPED
+  DELIVERED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum EscrowStatus {
+  PENDING_PAYMENT
+  FUNDS_HELD
+  DELIVERY_IN_PROGRESS
+  PROOF_UPLOADED
+  PENDING_CONFIRMATION
+  PENDING_MANAGER_APPROVAL
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UrgentStatus {
+  SEARCHING
+  MATCHED
+  ACCEPTED
+  IN_DELIVERY
+  DELIVERED
+  CONFIRMED
+  CANCELLED
+}
+
+enum ServiceCategory {
+  COMPANY
+  INTERIOR_DESIGN
+  CONTRACTOR
+  ELECTRICAL
+  PLUMBING
+  HVAC
+  LANDSCAPING
+  PAINTING
+  FLOORING
+  OTHER
+}
+
+enum ServiceRequestStatus {
+  OPEN
+  IN_REVIEW
+  AWARDED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  BID_RECEIVED
+  BID_ACCEPTED
+  BID_REJECTED
+  ORDER_CREATED
+  DELIVERY_PROOF
+  PAYMENT_RELEASED
+  MANAGER_APPROVAL_NEEDED
+  URGENT_MATCH
+  SERVICE_BID_RECEIVED
+  RATING_RECEIVED
+  GENERAL
+}
+
+// ============================================================
+// AUTH & USERS
+// ============================================================
+
+model User {
+  id              String        @id @default(cuid())
+  email           String        @unique
+  phone           String?       @unique
+  passwordHash    String
+  name            String
+  nameAr          String?
+  role            UserRole
+  status          AccountStatus @default(PENDING)
+  avatarUrl       String?
+  preferredLocale String        @default("en")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  supplierProfile   SupplierProfile?
+  contractorProfile ContractorProfile?
+  consultantProfile ConsultantProfile?
+  customerProfile   CustomerProfile?
+
+  accounts         Account[]
+  sessions         Session[]
+  serviceHubPosts  ServiceHubPost[]
+  serviceRequests  ServiceRequest[]
+  serviceBids      ServiceBid[]
+  notifications    Notification[]
+  sentMessages     Message[]     @relation("SentMessages")
+  receivedMessages Message[]     @relation("ReceivedMessages")
+
+  @@index([role])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================
+// ROLE-SPECIFIC PROFILES
+// ============================================================
+
+model SupplierProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName    String
+  companyNameAr  String?
+  tradeLicense   String?
+  city           UAECity
+  latitude       Float?
+  longitude      Float?
+  address        String?
+  addressAr      String?
+  description    String?  @db.Text
+  descriptionAr  String?  @db.Text
+  isVerified     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  inventoryItems      InventoryItem[]
+  marketplaceListings MarketplaceListing[]
+  materialBids        MaterialBid[]
+  ratings             SupplierRating[]
+  deliveries          Delivery[]
+
+  @@index([city])
+}
+
+model ContractorProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName   String
+  companyNameAr String?
+  tradeLicense  String?
+  city          UAECity
+  address       String?
+  description   String?  @db.Text
+  managerUserId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  boqs           BOQ[]
+  orders         Order[]
+  urgentRequests UrgentRequest[]
+}
+
+model ConsultantProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName    String
+  companyNameAr  String?
+  specialization String?
+  city           UAECity
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  boqs BOQ[]
+}
+
+model CustomerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city      UAECity
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  marketplaceOrders MarketplaceOrder[]
+}
+
+// ============================================================
+// INVENTORY & MARKETPLACE
+// ============================================================
+
+model MaterialCategory {
+  id       String  @id @default(cuid())
+  name     String
+  nameAr   String
+  slug     String  @unique
+  parentId String?
+  parent   MaterialCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children MaterialCategory[] @relation("CategoryHierarchy")
+
+  createdAt DateTime @default(now())
+
+  inventoryItems      InventoryItem[]
+  marketplaceListings MarketplaceListing[]
+  boqItems            BOQItem[]
+}
+
+model UnitOfMeasure {
+  id     String @id @default(cuid())
+  name   String @unique
+  nameAr String
+  symbol String
+
+  inventoryItems InventoryItem[]
+  boqItems       BOQItem[]
+}
+
+model InventoryItem {
+  id              String          @id @default(cuid())
+  supplierId      String
+  supplier        SupplierProfile @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  categoryId      String
+  category        MaterialCategory @relation(fields: [categoryId], references: [id])
+  unitId          String
+  unit            UnitOfMeasure   @relation(fields: [unitId], references: [id])
+  name            String
+  nameAr          String?
+  description     String?         @db.Text
+  descriptionAr   String?         @db.Text
+  sku             String?
+  brand           String?
+  pricePerUnit    Decimal         @db.Decimal(12, 2)
+  currency        String          @default("AED")
+  quantityInStock Decimal         @db.Decimal(12, 2)
+  minOrderQty     Decimal?        @db.Decimal(12, 2)
+  images          String[]
+  isActive        Boolean         @default(true)
+  canUrgentDeliver Boolean        @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  marketplaceListing MarketplaceListing?
+
+  @@index([supplierId])
+  @@index([categoryId])
+  @@index([isActive, canUrgentDeliver])
+}
+
+model MarketplaceListing {
+  id              String          @id @default(cuid())
+  supplierId      String
+  supplier        SupplierProfile @relation(fields: [supplierId], references: [id])
+  inventoryItemId String          @unique
+  inventoryItem   InventoryItem   @relation(fields: [inventoryItemId], references: [id])
+  categoryId      String
+  category        MaterialCategory @relation(fields: [categoryId], references: [id])
+  title           String
+  titleAr         String?
+  description     String?         @db.Text
+  descriptionAr   String?         @db.Text
+  price           Decimal         @db.Decimal(12, 2)
+  currency        String          @default("AED")
+  images          String[]
+  isFeatured      Boolean         @default(false)
+  isActive        Boolean         @default(true)
+  viewCount       Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  orderItems MarketplaceOrderItem[]
+
+  @@index([categoryId, isActive])
+  @@index([supplierId])
+}
+
+model MarketplaceOrder {
+  id          String      @id @default(cuid())
+  customerId  String
+  customer    CustomerProfile @relation(fields: [customerId], references: [id])
+  totalAmount Decimal     @db.Decimal(12, 2)
+  currency    String      @default("AED")
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items  MarketplaceOrderItem[]
+  escrow EscrowTransaction?
+}
+
+model MarketplaceOrderItem {
+  id         String             @id @default(cuid())
+  orderId    String
+  order      MarketplaceOrder   @relation(fields: [orderId], references: [id])
+  listingId  String
+  listing    MarketplaceListing @relation(fields: [listingId], references: [id])
+  quantity   Decimal            @db.Decimal(12, 2)
+  unitPrice  Decimal            @db.Decimal(12, 2)
+  totalPrice Decimal            @db.Decimal(12, 2)
+}
+
+// ============================================================
+// BOQ (BILL OF QUANTITIES) - CORE
+// ============================================================
+
+model BOQ {
+  id              String     @id @default(cuid())
+  type            BOQType
+  status          BOQStatus  @default(DRAFT)
+  title           String
+  titleAr         String?
+  description     String?    @db.Text
+  descriptionAr   String?    @db.Text
+  createdByUserId String
+
+  consultantId String?
+  consultant   ConsultantProfile? @relation(fields: [consultantId], references: [id])
+  contractorId String?
+  contractor   ContractorProfile? @relation(fields: [contractorId], references: [id])
+
+  purchaseMode    PurchaseMode?
+  startingPrice   Decimal?   @db.Decimal(12, 2)
+  autoAcceptPrice Decimal?   @db.Decimal(12, 2)
+  currency        String     @default("AED")
+  deliveryCity    UAECity?
+
+  biddingDeadline DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  items        BOQItem[]
+  materialBids MaterialBid[]
+  orders       Order[]
+
+  @@index([type, status])
+  @@index([consultantId])
+  @@index([contractorId])
+  @@index([createdAt])
+}
+
+model BOQItem {
+  id             String            @id @default(cuid())
+  boqId          String
+  boq            BOQ               @relation(fields: [boqId], references: [id], onDelete: Cascade)
+  categoryId     String?
+  category       MaterialCategory? @relation(fields: [categoryId], references: [id])
+  unitId         String?
+  unit           UnitOfMeasure?    @relation(fields: [unitId], references: [id])
+  itemNumber     Int
+  description    String
+  descriptionAr  String?
+  specification  String?
+  quantity       Decimal           @db.Decimal(12, 2)
+  estimatedPrice Decimal?          @db.Decimal(12, 2)
+  createdAt      DateTime          @default(now())
+
+  bidLineItems BidLineItem[]
+  orderItems   OrderItem[]
+
+  @@unique([boqId, itemNumber])
+  @@index([boqId])
+}
+
+// ============================================================
+// MATERIAL BIDDING
+// ============================================================
+
+model MaterialBid {
+  id           String          @id @default(cuid())
+  boqId        String
+  boq          BOQ             @relation(fields: [boqId], references: [id])
+  supplierId   String
+  supplier     SupplierProfile @relation(fields: [supplierId], references: [id])
+  totalPrice   Decimal         @db.Decimal(12, 2)
+  currency     String          @default("AED")
+  deliveryDays Int?
+  deliveryCost Decimal?        @db.Decimal(12, 2)
+  notes        String?         @db.Text
+  status       BidStatus       @default(SUBMITTED)
+  isAnonymous  Boolean         @default(true)
+  submittedAt  DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  lineItems BidLineItem[]
+  order     Order?
+
+  @@unique([boqId, supplierId])
+  @@index([boqId, status])
+  @@index([supplierId])
+}
+
+model BidLineItem {
+  id         String      @id @default(cuid())
+  bidId      String
+  bid        MaterialBid @relation(fields: [bidId], references: [id], onDelete: Cascade)
+  boqItemId  String
+  boqItem    BOQItem     @relation(fields: [boqItemId], references: [id])
+  unitPrice  Decimal     @db.Decimal(12, 2)
+  totalPrice Decimal     @db.Decimal(12, 2)
+  brand      String?
+  notes      String?
+
+  @@index([bidId])
+}
+
+// ============================================================
+// ORDERS & ESCROW
+// ============================================================
+
+model Order {
+  id           String            @id @default(cuid())
+  boqId        String
+  boq          BOQ               @relation(fields: [boqId], references: [id])
+  bidId        String            @unique
+  bid          MaterialBid       @relation(fields: [bidId], references: [id])
+  contractorId String
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id])
+  totalAmount  Decimal           @db.Decimal(12, 2)
+  currency     String            @default("AED")
+  status       OrderStatus       @default(PENDING)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  items           OrderItem[]
+  escrow          EscrowTransaction?
+  deliveries      Delivery[]
+  managerApproval ManagerApproval?
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id])
+  boqItemId  String
+  boqItem    BOQItem @relation(fields: [boqItemId], references: [id])
+  quantity   Decimal @db.Decimal(12, 2)
+  unitPrice  Decimal @db.Decimal(12, 2)
+  totalPrice Decimal @db.Decimal(12, 2)
+}
+
+model EscrowTransaction {
+  id                 String            @id @default(cuid())
+  orderId            String?           @unique
+  order              Order?            @relation(fields: [orderId], references: [id])
+  marketplaceOrderId String?           @unique
+  marketplaceOrder   MarketplaceOrder? @relation(fields: [marketplaceOrderId], references: [id])
+  amount             Decimal           @db.Decimal(12, 2)
+  currency           String            @default("AED")
+  status             EscrowStatus      @default(PENDING_PAYMENT)
+  paymentReference   String?
+  paidAt             DateTime?
+  releasedAt         DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([status])
+}
+
+model Delivery {
+  id          String          @id @default(cuid())
+  orderId     String
+  order       Order           @relation(fields: [orderId], references: [id])
+  supplierId  String
+  supplier    SupplierProfile @relation(fields: [supplierId], references: [id])
+  proofImages String[]
+  notes       String?         @db.Text
+  deliveredAt DateTime?
+  confirmedAt DateTime?
+  confirmedBy String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([orderId])
+}
+
+model ManagerApproval {
+  id        String         @id @default(cuid())
+  orderId   String         @unique
+  order     Order          @relation(fields: [orderId], references: [id])
+  managerId String
+  status    ApprovalStatus @default(PENDING)
+  notes     String?
+  decidedAt DateTime?
+  createdAt DateTime       @default(now())
+
+  @@index([managerId, status])
+}
+
+// ============================================================
+// URGENT REQUESTS (LAYER 3)
+// ============================================================
+
+model UrgentRequest {
+  id           String            @id @default(cuid())
+  contractorId String
+  contractor   ContractorProfile @relation(fields: [contractorId], references: [id])
+  title        String
+  description  String?           @db.Text
+  deliveryCity UAECity
+  deliveryLat  Float
+  deliveryLng  Float
+  maxRadiusKm  Int               @default(50)
+  status       UrgentStatus      @default(SEARCHING)
+  maxBudget    Decimal?          @db.Decimal(12, 2)
+  currency     String            @default("AED")
+  neededBy     DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  items   UrgentRequestItem[]
+  matches UrgentSupplierMatch[]
+
+  @@index([deliveryCity, status])
+}
+
+model UrgentRequestItem {
+  id          String        @id @default(cuid())
+  requestId   String
+  request     UrgentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Decimal       @db.Decimal(12, 2)
+  unit        String
+}
+
+model UrgentSupplierMatch {
+  id          String        @id @default(cuid())
+  requestId   String
+  request     UrgentRequest @relation(fields: [requestId], references: [id])
+  supplierId  String
+  distanceKm  Float
+  canFulfill  Boolean       @default(false)
+  priceQuote  Decimal?      @db.Decimal(12, 2)
+  respondedAt DateTime?
+  accepted    Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  @@unique([requestId, supplierId])
+  @@index([requestId])
+}
+
+// ============================================================
+// SERVICE HUB
+// ============================================================
+
+model ServiceHubPost {
+  id           String          @id @default(cuid())
+  authorId     String
+  author       User            @relation(fields: [authorId], references: [id])
+  category     ServiceCategory
+  title        String
+  titleAr      String?
+  content      String          @db.Text
+  contentAr    String?         @db.Text
+  images       String[]
+  tags         String[]
+  likeCount    Int             @default(0)
+  commentCount Int             @default(0)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  comments ServiceHubComment[]
+  likes    ServiceHubLike[]
+
+  @@index([category, createdAt])
+  @@index([authorId])
+}
+
+model ServiceHubComment {
+  id        String         @id @default(cuid())
+  postId    String
+  post      ServiceHubPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  content   String         @db.Text
+  createdAt DateTime       @default(now())
+
+  @@index([postId])
+}
+
+model ServiceHubLike {
+  id        String         @id @default(cuid())
+  postId    String
+  post      ServiceHubPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime       @default(now())
+
+  @@unique([postId, userId])
+}
+
+// ============================================================
+// SERVICE BIDDING
+// ============================================================
+
+model ServiceRequest {
+  id            String               @id @default(cuid())
+  requesterId   String
+  requester     User                 @relation(fields: [requesterId], references: [id])
+  category      ServiceCategory
+  title         String
+  titleAr       String?
+  description   String               @db.Text
+  descriptionAr String?              @db.Text
+  budget        Decimal?             @db.Decimal(12, 2)
+  currency      String               @default("AED")
+  city          UAECity
+  images        String[]
+  status        ServiceRequestStatus @default(OPEN)
+  deadline      DateTime?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  bids ServiceBid[]
+
+  @@index([category, status])
+  @@index([city])
+}
+
+model ServiceBid {
+  id            String         @id @default(cuid())
+  requestId     String
+  request       ServiceRequest @relation(fields: [requestId], references: [id])
+  bidderId      String
+  bidder        User           @relation(fields: [bidderId], references: [id])
+  price         Decimal        @db.Decimal(12, 2)
+  currency      String         @default("AED")
+  proposal      String         @db.Text
+  estimatedDays Int?
+  status        BidStatus      @default(SUBMITTED)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([requestId, bidderId])
+  @@index([requestId])
+}
+
+// ============================================================
+// SUPPLIER RATINGS
+// ============================================================
+
+model SupplierRating {
+  id                  String          @id @default(cuid())
+  supplierId          String
+  supplier            SupplierProfile @relation(fields: [supplierId], references: [id])
+  ratedByUserId       String
+  orderId             String?
+  trustworthiness     Int
+  deliveryReliability Int
+  timeliness          Int
+  materialQuality     Int
+  overallScore        Float
+  comment             String?         @db.Text
+  createdAt           DateTime        @default(now())
+
+  @@unique([supplierId, ratedByUserId, orderId])
+  @@index([supplierId])
+}
+
+// ============================================================
+// NOTIFICATIONS & MESSAGING
+// ============================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  titleAr   String?
+  body      String
+  bodyAr    String?
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead, createdAt])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content    String   @db.Text
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([senderId, receiverId])
+  @@index([receiverId, isRead])
+}

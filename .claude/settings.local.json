@@ -4,7 +4,9 @@
       "WebSearch",
       "Bash(node:*)",
       "Bash(npx:*)",
-      "Bash(yes \"\")"
+      "Bash(yes \"\")",
+      "Bash(npm install:*)",
+      "Bash(npm ls:*)"
     ]
   }
 }

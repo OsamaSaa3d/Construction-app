@@ -1,0 +1,117 @@
+{
+  "common": {
+    "appName": "منذر",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "submit": "إرسال",
+    "search": "بحث",
+    "loading": "جارٍ التحميل...",
+    "noResults": "لم يتم العثور على نتائج",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "close": "إغلاق",
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا",
+    "or": "أو",
+    "and": "و",
+    "aed": "د.إ"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "marketplace": "السوق",
+    "serviceHub": "مركز الخدمات",
+    "serviceBidding": "عروض الخدمات",
+    "dashboard": "لوحة التحكم",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "notifications": "الإشعارات",
+    "logout": "تسجيل الخروج"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "name": "الاسم الكامل",
+    "phone": "رقم الهاتف",
+    "companyName": "اسم الشركة",
+    "tradeLicense": "رقم الرخصة التجارية",
+    "city": "المدينة",
+    "role": "أنا",
+    "loginTitle": "مرحباً بعودتك",
+    "loginSubtitle": "سجّل الدخول إلى حسابك",
+    "registerTitle": "إنشاء حساب جديد",
+    "registerSubtitle": "انضم إلى منصة منذر",
+    "noAccount": "ليس لديك حساب؟",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "invalidCredentials": "بريد إلكتروني أو كلمة مرور غير صحيحة",
+    "emailExists": "البريد الإلكتروني مسجل بالفعل"
+  },
+  "roles": {
+    "SUPPLIER": "مورّد",
+    "CONTRACTOR": "مقاول",
+    "CONSULTANT": "استشاري",
+    "CUSTOMER": "عميل"
+  },
+  "cities": {
+    "ABU_DHABI": "أبوظبي",
+    "DUBAI": "دبي",
+    "SHARJAH": "الشارقة",
+    "AJMAN": "عجمان",
+    "UMM_AL_QUWAIN": "أم القيوين",
+    "RAS_AL_KHAIMAH": "رأس الخيمة",
+    "FUJAIRAH": "الفجيرة"
+  },
+  "dashboard": {
+    "welcome": "مرحباً، {name}",
+    "overview": "نظرة عامة",
+    "recentActivity": "النشاط الأخير"
+  },
+  "supplier": {
+    "inventory": "المخزون",
+    "myBids": "عروضي",
+    "orders": "الطلبات",
+    "ratings": "تقييماتي",
+    "addProduct": "إضافة منتج",
+    "manageInventory": "إدارة المخزون"
+  },
+  "contractor": {
+    "myBoqs": "جداول الكميات",
+    "bids": "العروض",
+    "orders": "الطلبات",
+    "urgent": "الطلبات العاجلة",
+    "createBoq": "إنشاء جدول كميات"
+  },
+  "consultant": {
+    "myBoqs": "جداول الكميات",
+    "analysis": "تحليل السوق",
+    "createBoq": "إنشاء جدول كميات"
+  },
+  "customer": {
+    "browse": "تصفح المنتجات",
+    "myOrders": "طلباتي"
+  },
+  "marketplace": {
+    "title": "السوق",
+    "browseProducts": "تصفح المنتجات",
+    "allCategories": "جميع الفئات",
+    "filterByCity": "تصفية حسب المدينة",
+    "priceRange": "نطاق السعر",
+    "sortBy": "ترتيب حسب",
+    "newest": "الأحدث",
+    "priceLowHigh": "السعر: من الأقل إلى الأعلى",
+    "priceHighLow": "السعر: من الأعلى إلى الأقل"
+  },
+  "landing": {
+    "hero": "سوق مواد البناء الخاص بك",
+    "subtitle": "تواصل مع الموردين، قدّم عروضاً على المواد، وأدر مشاريع البناء — كل ذلك في منصة واحدة.",
+    "getStarted": "ابدأ الآن",
+    "learnMore": "اعرف المزيد"
+  }
+}
