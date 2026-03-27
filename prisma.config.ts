@@ -3,12 +3,30 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+function normalizeDatabaseUrl(rawUrl: string | undefined) {
+  if (!rawUrl) return undefined;
+
+  const trimmed = rawUrl.trim();
+
+  // Some hosting dashboards store literal quotes as part of the value.
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+}
+
+const databaseUrl = normalizeDatabaseUrl(process.env["DATABASE_URL"]);
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: databaseUrl,
   },
 });

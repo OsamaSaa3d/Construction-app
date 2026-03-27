@@ -7,11 +7,31 @@ const globalForPrisma = globalThis as unknown as {
   pgPool: Pool | undefined;
 };
 
+function normalizeDatabaseUrl(rawUrl: string | undefined) {
+  if (!rawUrl) return "";
+
+  const trimmed = rawUrl.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+}
+
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = normalizeDatabaseUrl(process.env.DATABASE_URL);
 
   if (!connectionString) {
     throw new Error("DATABASE_URL is required to initialize Prisma client.");
+  }
+
+  if (!/^postgres(ql)?:\/\//i.test(connectionString)) {
+    throw new Error(
+      "DATABASE_URL must start with postgres:// or postgresql://. Check for accidental quotes or spaces."
+    );
   }
 
   const pgPool =
