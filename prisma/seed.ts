@@ -1,10 +1,23 @@
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
-import path from "path";
+import "dotenv/config";
+import { Pool } from "pg";
 
-const url = "file:" + path.resolve(__dirname, "..", "dev.db");
-const adapter = new PrismaLibSql({ url });
+const databaseUrl = process.env.DATABASE_URL?.trim();
+
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL is required to run the seed script.");
+}
+
+const pool = new Pool({
+  connectionString: databaseUrl,
+  ssl: { rejectUnauthorized: false },
+  keepAlive: true,
+  max: 5,
+});
+
+const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 const categories = [
@@ -141,7 +154,14 @@ async function main() {
     });
   }
   const allUnits = await prisma.unitOfMeasure.findMany();
-  const u = (symbol: string) => allUnits.find((u) => u.symbol === symbol)!;
+  const u = (symbol: string) => {
+    const asciiSymbol = symbol.replace("²", "2").replace("³", "3");
+    const unit = allUnits.find((item) => item.symbol === symbol || item.symbol === asciiSymbol);
+    if (!unit) {
+      throw new Error(`Unit with symbol ${symbol} not found`);
+    }
+    return unit;
+  };
   console.log(`Seeded ${units.length} units`);
 
   // ─── Categories ───────────────────────────────────────────────────────────────

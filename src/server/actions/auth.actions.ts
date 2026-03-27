@@ -1,6 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
 import { signIn, signOut } from "@/lib/auth";
@@ -116,5 +117,7 @@ export async function loginUser(email: string, password: string) {
 }
 
 export async function logoutUser(locale: string) {
-  await signOut({ redirectTo: `/${locale}/login` });
+  const safeLocale = locale === "ar" ? "ar" : "en";
+  await signOut({ redirect: false });
+  redirect(`/${safeLocale}/login`);
 }
