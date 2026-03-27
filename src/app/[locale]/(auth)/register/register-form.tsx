@@ -57,13 +57,19 @@ export function RegisterForm() {
       tradeLicense: (formData.get("tradeLicense") as string) || undefined,
     };
 
-    const result = await registerUser(data);
+    try {
+      const result = await registerUser(data);
 
-    if (result.error) {
-      setError(result.error);
-      setLoading(false);
-    } else {
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
       router.push("/login");
+    } catch {
+      setError("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
