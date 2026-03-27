@@ -60,7 +60,20 @@ export async function getContractorUrgentRequests() {
     orderBy: { createdAt: "desc" },
   });
 
-  return { data: requests };
+  return {
+    data: requests.map((request) => ({
+      ...request,
+      maxBudget: request.maxBudget ? Number(request.maxBudget) : null,
+      items: request.items.map((item) => ({
+        ...item,
+        quantity: Number(item.quantity),
+      })),
+      matches: request.matches.map((match) => ({
+        ...match,
+        priceQuote: match.priceQuote ? Number(match.priceQuote) : null,
+      })),
+    })),
+  };
 }
 
 /**
@@ -107,7 +120,21 @@ export async function getUrgentRequestDetail(id: string) {
   // Suppliers only see their own match entry
   const visibleMatches = isContractor ? request.matches : request.matches.filter((m) => m.supplierId === supplierMatch!.supplierId);
 
-  return { data: { ...request, matches: visibleMatches }, isContractor };
+  return {
+    data: {
+      ...request,
+      maxBudget: request.maxBudget ? Number(request.maxBudget) : null,
+      items: request.items.map((item) => ({
+        ...item,
+        quantity: Number(item.quantity),
+      })),
+      matches: visibleMatches.map((match) => ({
+        ...match,
+        priceQuote: match.priceQuote ? Number(match.priceQuote) : null,
+      })),
+    },
+    isContractor,
+  };
 }
 
 /**
@@ -266,7 +293,20 @@ export async function getSupplierUrgentMatches() {
     orderBy: { createdAt: "desc" },
   });
 
-  return { data: matches };
+  return {
+    data: matches.map((match) => ({
+      ...match,
+      priceQuote: match.priceQuote ? Number(match.priceQuote) : null,
+      request: {
+        ...match.request,
+        maxBudget: match.request.maxBudget ? Number(match.request.maxBudget) : null,
+        items: match.request.items.map((item) => ({
+          ...item,
+          quantity: Number(item.quantity),
+        })),
+      },
+    })),
+  };
 }
 
 /**

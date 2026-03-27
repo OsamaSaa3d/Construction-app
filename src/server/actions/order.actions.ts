@@ -46,7 +46,22 @@ export async function getContractorOrders() {
     orderBy: { createdAt: "desc" },
   });
 
-  return { data: orders };
+  return {
+    data: orders.map((order) => ({
+      ...order,
+      totalAmount: Number(order.totalAmount),
+      bid: {
+        ...order.bid,
+        totalPrice: Number(order.bid.totalPrice),
+      },
+      escrow: order.escrow
+        ? {
+            ...order.escrow,
+            amount: Number(order.escrow.amount),
+          }
+        : null,
+    })),
+  };
 }
 
 /**
@@ -60,10 +75,19 @@ export async function getOrderDetail(id: string) {
     where: { id },
     include: {
       escrow: true,
-      boq: { include: { items: true } },
+      boq: { include: { items: { include: { unit: { select: { symbol: true } } } } } },
       bid: {
         include: {
-          lineItems: true,
+          lineItems: {
+            include: {
+              boqItem: {
+                select: {
+                  itemNumber: true,
+                  description: true,
+                },
+              },
+            },
+          },
           supplier: { select: { companyName: true, userId: true } },
         },
       },
@@ -83,13 +107,39 @@ export async function getOrderDetail(id: string) {
   // Hide supplier info until payment
   const data = {
     ...order,
+    totalAmount: Number(order.totalAmount),
+    boq: {
+      ...order.boq,
+      items: order.boq.items.map((item) => ({
+        id: item.id,
+        itemNumber: item.itemNumber,
+        description: item.description,
+        quantity: Number(item.quantity),
+        unit: item.unit,
+      })),
+    },
     bid: {
       ...order.bid,
+      totalPrice: Number(order.bid.totalPrice),
+      deliveryCost: order.bid.deliveryCost ? Number(order.bid.deliveryCost) : null,
+      lineItems: order.bid.lineItems.map((item) => ({
+        id: item.id,
+        brand: item.brand,
+        unitPrice: Number(item.unitPrice),
+        totalPrice: Number(item.totalPrice),
+        boqItem: item.boqItem,
+      })),
       supplier:
         order.bid.isAnonymous && !isSupplier
-          ? { companyName: "Anonymous" }
+          ? { companyName: "Anonymous Supplier", userId: "" }
           : order.bid.supplier,
     },
+    escrow: order.escrow
+      ? {
+          ...order.escrow,
+          amount: Number(order.escrow.amount),
+        }
+      : null,
   };
 
   return { data };
@@ -114,7 +164,22 @@ export async function getSupplierOrders() {
     orderBy: { createdAt: "desc" },
   });
 
-  return { data: orders };
+  return {
+    data: orders.map((order) => ({
+      ...order,
+      totalAmount: Number(order.totalAmount),
+      bid: {
+        ...order.bid,
+        totalPrice: Number(order.bid.totalPrice),
+      },
+      escrow: order.escrow
+        ? {
+            ...order.escrow,
+            amount: Number(order.escrow.amount),
+          }
+        : null,
+    })),
+  };
 }
 
 // ─── Contractor: simulate payment ────────────────────────────────────────────

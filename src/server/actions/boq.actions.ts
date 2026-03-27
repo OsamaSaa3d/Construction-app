@@ -104,6 +104,13 @@ export async function getBOQDetail(id: string) {
     const revealIdentity = !bid.isAnonymous || boq.status === "AWARDED" || isOwnBid;
     return {
       ...bid,
+      totalPrice: Number(bid.totalPrice),
+      deliveryCost: bid.deliveryCost ? Number(bid.deliveryCost) : null,
+      lineItems: bid.lineItems.map((item) => ({
+        ...item,
+        unitPrice: Number(item.unitPrice),
+        totalPrice: Number(item.totalPrice),
+      })),
       supplier: revealIdentity
         ? bid.supplier
         : { id: null, companyName: "Anonymous Supplier", city: bid.supplier.city, isVerified: false },
@@ -113,6 +120,13 @@ export async function getBOQDetail(id: string) {
   return {
     data: {
       ...boq,
+      startingPrice: boq.startingPrice ? Number(boq.startingPrice) : null,
+      autoAcceptPrice: boq.autoAcceptPrice ? Number(boq.autoAcceptPrice) : null,
+      items: boq.items.map((item) => ({
+        ...item,
+        quantity: Number(item.quantity),
+        estimatedPrice: item.estimatedPrice ? Number(item.estimatedPrice) : null,
+      })),
       materialBids: sanitisedBids,
       isOwner,
       managerUserId: boq.contractor?.managerUserId ?? null,
@@ -274,7 +288,20 @@ export async function getMyBidOnBOQ(boqId: string) {
     include: { lineItems: true },
   });
 
-  return { data: bid };
+  return {
+    data: bid
+      ? {
+          ...bid,
+          totalPrice: Number(bid.totalPrice),
+          deliveryCost: bid.deliveryCost ? Number(bid.deliveryCost) : null,
+          lineItems: bid.lineItems.map((item) => ({
+            ...item,
+            unitPrice: Number(item.unitPrice),
+            totalPrice: Number(item.totalPrice),
+          })),
+        }
+      : null,
+  };
 }
 
 /**
@@ -455,5 +482,11 @@ export async function getMyBids() {
     orderBy: { submittedAt: "desc" },
   });
 
-  return { data: bids };
+  return {
+    data: bids.map((bid) => ({
+      ...bid,
+      totalPrice: Number(bid.totalPrice),
+      deliveryCost: bid.deliveryCost ? Number(bid.deliveryCost) : null,
+    })),
+  };
 }

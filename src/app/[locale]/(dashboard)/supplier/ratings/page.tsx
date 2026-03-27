@@ -12,7 +12,7 @@ export default async function SupplierRatingsPage({ params }: Props) {
   setRequestLocale(locale);
 
   const result = await getMyRatingsAsSupplier();
-  if (result.error || !result.data) redirect(`/${locale}/supplier`);
+  if (!("data" in result) || !result.data) redirect(`/${locale}/supplier`);
 
   return <SupplierRatingsClient data={result.data} />;
 }
