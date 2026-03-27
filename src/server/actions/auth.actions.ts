@@ -25,65 +25,75 @@ export async function registerUser(data: RegisterInput) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        passwordHash,
-        role: role as UserRole,
-        phone: phone || null,
-        status: "ACTIVE",
-      },
+    await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          name,
+          email,
+          passwordHash,
+          role: role as UserRole,
+          phone: phone || null,
+          status: "ACTIVE",
+        },
+      });
+
+      // Create role-specific profile in the same transaction to avoid partial users.
+      const cityEnum = city as UAECity;
+
+      switch (role) {
+        case "SUPPLIER":
+          await tx.supplierProfile.create({
+            data: {
+              userId: user.id,
+              companyName,
+              city: cityEnum,
+              tradeLicense: tradeLicense || null,
+            },
+          });
+          break;
+        case "CONTRACTOR":
+          await tx.contractorProfile.create({
+            data: {
+              userId: user.id,
+              companyName,
+              city: cityEnum,
+              tradeLicense: tradeLicense || null,
+            },
+          });
+          break;
+        case "CONSULTANT":
+          await tx.consultantProfile.create({
+            data: {
+              userId: user.id,
+              companyName,
+              city: cityEnum,
+            },
+          });
+          break;
+        case "CUSTOMER":
+          await tx.customerProfile.create({
+            data: {
+              userId: user.id,
+              city: cityEnum,
+            },
+          });
+          break;
+      }
     });
-
-    // Create role-specific profile
-    const cityEnum = city as UAECity;
-
-    switch (role) {
-      case "SUPPLIER":
-        await prisma.supplierProfile.create({
-          data: {
-            userId: user.id,
-            companyName,
-            city: cityEnum,
-            tradeLicense: tradeLicense || null,
-          },
-        });
-        break;
-      case "CONTRACTOR":
-        await prisma.contractorProfile.create({
-          data: {
-            userId: user.id,
-            companyName,
-            city: cityEnum,
-            tradeLicense: tradeLicense || null,
-          },
-        });
-        break;
-      case "CONSULTANT":
-        await prisma.consultantProfile.create({
-          data: {
-            userId: user.id,
-            companyName,
-            city: cityEnum,
-          },
-        });
-        break;
-      case "CUSTOMER":
-        await prisma.customerProfile.create({
-          data: {
-            userId: user.id,
-            city: cityEnum,
-          },
-        });
-        break;
-    }
 
     return { success: true };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
         return { error: "A user with these details already exists." };
+      }
+
+      if (error.code === "P2021") {
+        return { error: "Database schema is not initialized. Please contact support." };
+      }
+
+      if (error.code === "P1001" || error.code === "P1017") {
+        return { error: "Database connection failed. Please try again shortly." };
       }
     }
 
