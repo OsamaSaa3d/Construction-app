@@ -22,10 +22,12 @@ function normalizeDatabaseUrl(rawUrl: string | undefined) {
 }
 
 function createPrismaClient() {
-  const connectionString = normalizeDatabaseUrl(process.env.DATABASE_URL);
+  const connectionString =
+    normalizeDatabaseUrl(process.env.DATABASE_URL) ||
+    normalizeDatabaseUrl(process.env.DIRECT_URL);
 
   if (!connectionString) {
-    throw new Error("DATABASE_URL is required to initialize Prisma client.");
+    throw new Error("DATABASE_URL or DIRECT_URL is required to initialize Prisma client.");
   }
 
   if (!/^postgres(ql)?:\/\//i.test(connectionString)) {
