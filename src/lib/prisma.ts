@@ -1,22 +1,19 @@
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import path from "path";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 function createPrismaClient() {
-  const dbPath = process.env.DATABASE_URL ?? "file:./dev.db";
+  const connectionString = process.env.DATABASE_URL;
 
-  // Resolve relative file: paths to absolute for libsql
-  let url = dbPath;
-  if (dbPath.startsWith("file:./")) {
-    const relative = dbPath.replace("file:./", "");
-    url = "file:" + path.resolve(process.cwd(), relative);
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is required to initialize Prisma client.");
   }
 
-  const adapter = new PrismaLibSql({ url });
+  const adapter = new PrismaPg({ connectionString });
+
   return new PrismaClient({ adapter });
 }
 
