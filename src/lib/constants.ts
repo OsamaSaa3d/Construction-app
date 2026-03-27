@@ -7,6 +7,8 @@ import {
   BarChart3,
   Zap,
   ShoppingBag,
+  Store,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,6 +24,8 @@ export const supplierNavItems: NavItem[] = [
   { labelKey: "supplier.orders", href: "/supplier/orders", icon: ShoppingCart },
   { labelKey: "supplier.urgent", href: "/supplier/urgent", icon: Zap },
   { labelKey: "supplier.ratings", href: "/supplier/ratings", icon: Star },
+  { labelKey: "marketplace.title", href: "/marketplace", icon: Store },
+  { labelKey: "serviceHub.title", href: "/service-hub", icon: MessageSquare },
 ];
 
 export const contractorNavItems: NavItem[] = [
@@ -29,16 +33,21 @@ export const contractorNavItems: NavItem[] = [
   { labelKey: "contractor.bids", href: "/contractor/bids", icon: Gavel },
   { labelKey: "contractor.orders", href: "/contractor/orders", icon: ShoppingCart },
   { labelKey: "contractor.urgent", href: "/contractor/urgent", icon: Zap },
+  { labelKey: "marketplace.title", href: "/marketplace", icon: Store },
+  { labelKey: "serviceHub.title", href: "/service-hub", icon: MessageSquare },
 ];
 
 export const consultantNavItems: NavItem[] = [
   { labelKey: "consultant.myBoqs", href: "/consultant/boq", icon: FileSpreadsheet },
   { labelKey: "consultant.analysis", href: "/consultant/analysis", icon: BarChart3 },
+  { labelKey: "marketplace.title", href: "/marketplace", icon: Store },
+  { labelKey: "serviceHub.title", href: "/service-hub", icon: MessageSquare },
 ];
 
 export const customerNavItems: NavItem[] = [
   { labelKey: "customer.browse", href: "/customer/browse", icon: ShoppingBag },
   { labelKey: "customer.myOrders", href: "/customer/orders", icon: ShoppingCart },
+  { labelKey: "serviceHub.title", href: "/service-hub", icon: MessageSquare },
 ];
 
 export const roleNavMap: Record<string, NavItem[]> = {

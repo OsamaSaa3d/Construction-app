@@ -31,9 +31,10 @@ type Props = {
   posts: Post[];
   filters: { category?: string; search?: string };
   locale: string;
+  backHref?: string;
 };
 
-export function ServiceHubBrowse({ posts, filters, locale }: Props) {
+export function ServiceHubBrowse({ posts, filters, locale, backHref = "/" }: Props) {
   const t = useTranslations("serviceHub");
   const router = useRouter();
   const pathname = usePathname();
@@ -58,7 +59,7 @@ export function ServiceHubBrowse({ posts, filters, locale }: Props) {
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/"
+            href={backHref}
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />

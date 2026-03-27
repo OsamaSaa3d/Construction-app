@@ -25,6 +25,7 @@
   },
   "nav": {
     "home": "Home",
+    "login": "Login",
     "marketplace": "Marketplace",
     "serviceHub": "Service Hub",
     "serviceBidding": "Service Bidding",

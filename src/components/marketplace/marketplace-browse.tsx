@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Zap, ShieldCheck } from "lucide-react";
+import { Search, MapPin, Zap, ShieldCheck, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -57,6 +57,7 @@ type Props = {
     sort?: string;
   };
   locale: string;
+  backHref?: string;
 };
 
 const UAE_CITIES = [
@@ -69,7 +70,7 @@ const UAE_CITIES = [
   "FUJAIRAH",
 ] as const;
 
-export function MarketplaceBrowse({ listings, categories, filters, locale }: Props) {
+export function MarketplaceBrowse({ listings, categories, filters, locale, backHref = "/" }: Props) {
   const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
@@ -100,6 +101,14 @@ export function MarketplaceBrowse({ listings, categories, filters, locale }: Pro
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="mb-8">
+        <Link
+          href={backHref}
+          locale={locale}
+          className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t("common.back")}
+        </Link>
         <h1 className="text-3xl font-bold">{t("marketplace.title")}</h1>
         <p className="mt-1 text-muted-foreground">{t("marketplace.browseProducts")}</p>
       </div>

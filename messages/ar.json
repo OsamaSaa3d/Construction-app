@@ -25,6 +25,7 @@
   },
   "nav": {
     "home": "الرئيسية",
+    "login": "تسجيل الدخول",
     "marketplace": "السوق",
     "serviceHub": "مركز الخدمات",
     "serviceBidding": "عروض الخدمات",

@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -27,6 +28,7 @@ function LandingContent() {
             {tCommon("appName")}
           </span>
           <nav className="flex items-center gap-4">
+            <LocaleSwitcher />
             <Link href="/marketplace" className="text-sm text-gray-600 hover:text-gray-900">
               {tNav("marketplace")}
             </Link>
@@ -34,10 +36,16 @@ function LandingContent() {
               {tNav("serviceHub")}
             </Link>
             <Link
-              href="/login"
+              href="/register"
               className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >
               {t("getStarted")}
+            </Link>
+            <Link
+              href="/login"
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              {tNav("login")}
             </Link>
           </nav>
         </div>

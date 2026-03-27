@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerSchema, type RegisterInput } from "@/lib/validations/auth";
-import { signIn } from "@/lib/auth";
+import { signIn, signOut } from "@/lib/auth";
 import { UAECity, UserRole } from "@/generated/prisma/client";
 
 export async function registerUser(data: RegisterInput) {
@@ -92,4 +92,8 @@ export async function loginUser(email: string, password: string) {
   } catch {
     return { error: "Invalid email or password" };
   }
+}
+
+export async function logoutUser(locale: string) {
+  await signOut({ redirectTo: `/${locale}/login` });
 }

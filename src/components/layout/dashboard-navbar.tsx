@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { Bell, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { LocaleSwitcher } from "./locale-switcher";
 import { Link } from "@/i18n/navigation";
+import { logoutUser } from "@/server/actions/auth.actions";
 
 type Props = {
   userName: string;
@@ -23,6 +25,7 @@ type Props = {
 
 export function DashboardNavbar({ userName, userRole, unreadCount = 0 }: Props) {
   const t = useTranslations();
+  const locale = useLocale();
 
   const initials = userName
     .split(" ")
@@ -30,6 +33,8 @@ export function DashboardNavbar({ userName, userRole, unreadCount = 0 }: Props) 
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const logoutAction = logoutUser.bind(null, locale);
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-background px-6">
@@ -75,10 +80,15 @@ export function DashboardNavbar({ userName, userRole, unreadCount = 0 }: Props) 
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex items-center gap-2 text-destructive">
-              <LogOut className="h-4 w-4" />
-              {t("nav.logout")}
-            </DropdownMenuItem>
+            <form action={logoutAction} className="w-full">
+              <button
+                type="submit"
+                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive outline-none hover:bg-accent"
+              >
+                <LogOut className="h-4 w-4" />
+                {t("nav.logout")}
+              </button>
+            </form>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

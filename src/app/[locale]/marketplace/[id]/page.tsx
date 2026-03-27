@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { getMarketplaceListing } from "@/server/actions/marketplace.actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,17 @@ export default async function ProductDetailPage({ params }: Props) {
   setRequestLocale(locale);
 
   const t = await getTranslations();
+  const session = await auth();
+
+  const roleHomeMap: Record<string, string> = {
+    SUPPLIER: "/supplier",
+    CONTRACTOR: "/contractor",
+    CONSULTANT: "/consultant",
+    CUSTOMER: "/customer",
+  };
+
+  const backHref = session?.user?.role ? roleHomeMap[session.user.role] ?? "/marketplace" : "/marketplace";
+
   const listing = await getMarketplaceListing(id);
 
   if (!listing) {
@@ -33,11 +45,11 @@ export default async function ProductDetailPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <Link
-        href={`/${locale}/marketplace`}
+        href={backHref}
         className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        {t("common.back")} {t("marketplace.title")}
+        {t("common.back")}
       </Link>
 
       <div className="grid gap-6 md:grid-cols-3">

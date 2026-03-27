@@ -1,5 +1,4 @@
 import { setRequestLocale } from "next-intl/server";
-import { auth } from "@/lib/auth";
 import {
   getMarketplaceListings,
   getMarketplaceCategories,
@@ -11,22 +10,11 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 };
 
-export default async function MarketplacePage({ params, searchParams }: Props) {
+export default async function CustomerBrowsePage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const sp = await searchParams;
-  const session = await auth();
-
-  const roleHomeMap: Record<string, string> = {
-    SUPPLIER: "/supplier",
-    CONTRACTOR: "/contractor",
-    CONSULTANT: "/consultant",
-    CUSTOMER: "/customer",
-  };
-
-  const backHref = session?.user?.role ? roleHomeMap[session.user.role] ?? "/" : "/";
-
   const filters = {
     categoryId: sp.category || undefined,
     city: sp.city || undefined,
@@ -45,7 +33,6 @@ export default async function MarketplacePage({ params, searchParams }: Props) {
       categories={categories}
       filters={filters}
       locale={locale}
-      backHref={backHref}
     />
   );
 }
