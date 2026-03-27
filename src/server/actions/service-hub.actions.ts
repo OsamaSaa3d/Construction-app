@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { Prisma } from "@/generated/prisma/client";
 import {
   createPostSchema,
   createCommentSchema,
@@ -9,100 +10,131 @@ import {
 } from "@/lib/validations/service-hub";
 import { revalidatePath } from "next/cache";
 
+function getDbErrorMessage(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2021") {
+      return "Database schema is not initialized.";
+    }
+
+    if (error.code === "P1001" || error.code === "P1017") {
+      return "Database connection failed.";
+    }
+  }
+
+  return "Unexpected database error.";
+}
+
 export async function getServiceHubPosts(filters?: {
   category?: string;
   search?: string;
 }) {
-  const posts = await prisma.serviceHubPost.findMany({
-    where: {
-      isActive: true,
-      ...(filters?.category ? { category: filters.category as any } : {}),
-      ...(filters?.search
-        ? {
-            OR: [
-              { title: { contains: filters.search } },
-              { content: { contains: filters.search } },
-            ],
-          }
-        : {}),
-    },
-    include: {
-      author: { select: { id: true, name: true, avatarUrl: true, role: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  return { data: posts };
+  try {
+    const posts = await prisma.serviceHubPost.findMany({
+      where: {
+        isActive: true,
+        ...(filters?.category ? { category: filters.category as any } : {}),
+        ...(filters?.search
+          ? {
+              OR: [
+                { title: { contains: filters.search } },
+                { content: { contains: filters.search } },
+              ],
+            }
+          : {}),
+      },
+      include: {
+        author: { select: { id: true, name: true, avatarUrl: true, role: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return { data: posts };
+  } catch (error) {
+    console.error("getServiceHubPosts failed", error);
+    return { data: [], error: getDbErrorMessage(error) };
+  }
 }
 
 export async function getServiceHubPost(id: string) {
-  const session = await auth();
+  try {
+    const session = await auth();
 
-  const post = await prisma.serviceHubPost.findUnique({
-    where: { id, isActive: true },
-    include: {
-      author: { select: { id: true, name: true, avatarUrl: true, role: true } },
-      comments: {
-        include: {
-          author: { select: { id: true, name: true, avatarUrl: true } },
+    const post = await prisma.serviceHubPost.findUnique({
+      where: { id, isActive: true },
+      include: {
+        author: { select: { id: true, name: true, avatarUrl: true, role: true } },
+        comments: {
+          include: {
+            author: { select: { id: true, name: true, avatarUrl: true } },
+          },
+          orderBy: { createdAt: "asc" },
         },
-        orderBy: { createdAt: "asc" },
+        likes: {
+          where: { userId: session?.user?.id ?? "" },
+          select: { id: true },
+        },
       },
-      likes: {
-        where: { userId: session?.user?.id ?? "" },
-        select: { id: true },
-      },
-    },
-  });
+    });
 
-  if (!post) return { error: "Not found" as const };
+    if (!post) return { error: "Not found" as const };
 
-  const liked = (post.likes?.length ?? 0) > 0;
-  return { data: post, liked, userId: session?.user?.id ?? null };
+    const liked = (post.likes?.length ?? 0) > 0;
+    return { data: post, liked, userId: session?.user?.id ?? null };
+  } catch (error) {
+    console.error("getServiceHubPost failed", error);
+    return { error: "Not found" as const };
+  }
 }
 
 export async function createServiceHubPost(data: CreatePostInput) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized" };
 
-  const parsed = createPostSchema.safeParse(data);
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+    const parsed = createPostSchema.safeParse(data);
+    if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const { title, content, category, imageUrls, tags } = parsed.data;
+    const { title, content, category, imageUrls, tags } = parsed.data;
 
-  const post = await prisma.serviceHubPost.create({
-    data: {
-      authorId: session.user.id,
-      category: category as any,
-      title,
-      content,
-      images: JSON.stringify(imageUrls ?? []),
-      tags: JSON.stringify(tags ?? []),
-    },
-  });
+    const post = await prisma.serviceHubPost.create({
+      data: {
+        authorId: session.user.id,
+        category: category as any,
+        title,
+        content,
+        images: JSON.stringify(imageUrls ?? []),
+        tags: JSON.stringify(tags ?? []),
+      },
+    });
 
-  revalidatePath("/service-hub");
-  return { data: post };
+    revalidatePath("/service-hub");
+    return { data: post };
+  } catch (error) {
+    console.error("createServiceHubPost failed", error);
+    return { error: getDbErrorMessage(error) };
+  }
 }
 
 export async function toggleLike(postId: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized" };
 
-  const existing = await prisma.serviceHubLike.findUnique({
-    where: { postId_userId: { postId, userId: session.user.id } },
-  });
+    const existing = await prisma.serviceHubLike.findUnique({
+      where: { postId_userId: { postId, userId: session.user.id } },
+    });
 
-  if (existing) {
-    await prisma.$transaction([
-      prisma.serviceHubLike.delete({ where: { id: existing.id } }),
-      prisma.serviceHubPost.update({
-        where: { id: postId },
-        data: { likeCount: { decrement: 1 } },
-      }),
-    ]);
-    revalidatePath(`/service-hub/${postId}`);
-    return { liked: false };
-  } else {
+    if (existing) {
+      await prisma.$transaction([
+        prisma.serviceHubLike.delete({ where: { id: existing.id } }),
+        prisma.serviceHubPost.update({
+          where: { id: postId },
+          data: { likeCount: { decrement: 1 } },
+        }),
+      ]);
+      revalidatePath(`/service-hub/${postId}`);
+      return { liked: false };
+    }
+
     await prisma.$transaction([
       prisma.serviceHubLike.create({ data: { postId, userId: session.user.id } }),
       prisma.serviceHubPost.update({
@@ -112,26 +144,34 @@ export async function toggleLike(postId: string) {
     ]);
     revalidatePath(`/service-hub/${postId}`);
     return { liked: true };
+  } catch (error) {
+    console.error("toggleLike failed", error);
+    return { error: getDbErrorMessage(error) };
   }
 }
 
 export async function addComment(postId: string, content: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized" };
 
-  const parsed = createCommentSchema.safeParse({ content });
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+    const parsed = createCommentSchema.safeParse({ content });
+    if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  await prisma.$transaction([
-    prisma.serviceHubComment.create({
-      data: { postId, authorId: session.user.id, content: parsed.data.content },
-    }),
-    prisma.serviceHubPost.update({
-      where: { id: postId },
-      data: { commentCount: { increment: 1 } },
-    }),
-  ]);
+    await prisma.$transaction([
+      prisma.serviceHubComment.create({
+        data: { postId, authorId: session.user.id, content: parsed.data.content },
+      }),
+      prisma.serviceHubPost.update({
+        where: { id: postId },
+        data: { commentCount: { increment: 1 } },
+      }),
+    ]);
 
-  revalidatePath(`/service-hub/${postId}`);
-  return { success: true };
+    revalidatePath(`/service-hub/${postId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("addComment failed", error);
+    return { error: getDbErrorMessage(error) };
+  }
 }
